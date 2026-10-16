@@ -42,5 +42,18 @@ jobs:
         run: |
           echo "Packaging application files..."
           tar -czvf build-artifact.tar.gz config.py index.html README.md
-          ls -lh build-artifact.tar.gz
           echo "Build packaging completed successfully."
+
+  security-job:
+    name: Test GitHub Secrets Masking
+    needs: build-job
+    runs-on: ubuntu-latest
+    env:
+      DB_PASS: ${{ secrets.DATABASE_PASSWORD }}
+    steps:
+      - name: Verify Secret Masking in Logs
+        run: |
+          echo "Testing secret handling in CI..."
+          echo "Trying to print DB_PASS environment variable directly:"
+          echo "Database password is: $DB_PASS"
+          echo "Secret verification complete."
