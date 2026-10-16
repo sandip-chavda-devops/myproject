@@ -1,0 +1,10 @@
+name: First-Pipeline
+
+on: [push]
+
+jobs:
+  my-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Message
+        run: echo "Hello World! GitHub Actions chal gaya!"
