@@ -1,0 +1,22 @@
+name: First-Pipeline
+
+on: [push]
+
+jobs:
+  test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: List Files Inside Runner VM
+        run: |
+          echo "Current working directory on runner:"
+          pwd
+          echo "Files cloned from repository:"
+          ls -la
+
+      - name: Run Smoke Test on Python Script
+        run: |
+          python3 config.py
+          echo "Smoke test passed successfully!"
