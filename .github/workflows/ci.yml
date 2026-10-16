@@ -1,0 +1,46 @@
+name: Multi-Job-CI-Pipeline
+
+on: [push]
+
+jobs:
+  lint-job:
+    name: Code Syntax Check (Lint)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Check Python Syntax
+        run: |
+          echo "Checking Python syntax on config.py..."
+          python3 -m py_compile config.py
+          echo "Syntax check completed with zero errors."
+
+  test-job:
+    name: Run Unit Tests
+    needs: lint-job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Smoke Test
+        run: |
+          echo "Running application smoke test..."
+          python3 config.py
+          echo "All unit/smoke tests passed."
+
+  build-job:
+    name: Build Production Package
+    needs: test-job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Package Artifact
+        run: |
+          echo "Packaging application files..."
+          tar -czvf build-artifact.tar.gz config.py index.html README.md
+          ls -lh build-artifact.tar.gz
+          echo "Build packaging completed successfully."
