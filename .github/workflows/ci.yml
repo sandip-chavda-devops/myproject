@@ -16,6 +16,12 @@ jobs:
           python3 -m py_compile config.py
           echo "Syntax check completed with zero errors."
 
+      - name: Optional Lint Warning (Non-blocking)
+        continue-on-error: true
+        run: |
+          echo "Simulating a non-critical linter failure..."
+          exit 1
+
   test-job:
     name: Run Unit Tests
     needs: lint-job
@@ -44,16 +50,31 @@ jobs:
           tar -czvf build-artifact.tar.gz config.py index.html README.md
           echo "Build packaging completed successfully."
 
-  security-job:
-    name: Test GitHub Secrets Masking
+      - name: Upload Production Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build-package
+          path: build-artifact.tar.gz
+          retention-days: 1
+
+  verify-artifact-job:
+    name: Download & Verify Artifact
     needs: build-job
     runs-on: ubuntu-latest
-    env:
-      DB_PASS: ${{ secrets.DATABASE_PASSWORD }}
     steps:
-      - name: Verify Secret Masking in Logs
+      - name: Download Production Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: production-build-package
+
+      - name: Inspect Downloaded Artifact
         run: |
-          echo "Testing secret handling in CI..."
-          echo "Trying to print DB_PASS environment variable directly:"
-          echo "Database password is: $DB_PASS"
-          echo "Secret verification complete."
+          echo "Verifying downloaded artifact in clean runner workspace..."
+          ls -lh build-artifact.tar.gz
+          tar -ztvf build-artifact.tar.gz
+          echo "Artifact verification successful!"
+
+      - name: Cleanup Step
+        if: always()
+        run: |
+          echo "Running always() hook: Workspace cleanup complete."
