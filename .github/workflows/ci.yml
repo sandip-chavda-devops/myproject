@@ -16,6 +16,12 @@ jobs:
           python3 -m py_compile config.py
           echo "Syntax check completed with zero errors."
 
+      - name: Optional Lint Warning (Non-blocking)
+        continue-on-error: true
+        run: |
+          echo "Simulating a non-critical linter failure..."
+          exit 1
+
   test-job:
     name: Run Unit Tests
     needs: lint-job
@@ -65,6 +71,10 @@ jobs:
         run: |
           echo "Verifying downloaded artifact in clean runner workspace..."
           ls -lh build-artifact.tar.gz
-          echo "Extracting contents to verify package integrity..."
           tar -ztvf build-artifact.tar.gz
           echo "Artifact verification successful!"
+
+      - name: Cleanup Step
+        if: always()
+        run: |
+          echo "Running always() hook: Workspace cleanup complete."
